@@ -80,8 +80,14 @@ async function runDemoTryOn({
   );
   const garmentSvg = await readFile(garmentPath);
 
-  const garmentWidth = Math.round(width * 0.55);
-  const garmentHeight = Math.round(garmentWidth * 1.25);
+  // Most uploads are close-up selfies (face + shoulders filling the frame)
+  // rather than full-body shots, so anchor the garment around where
+  // shoulders typically sit in that framing — just below the frame's
+  // midpoint — instead of near the top (which would land on the face).
+  const garmentWidth = Math.round(width * 0.5);
+  const top = Math.round(height * 0.46);
+  const maxHeight = Math.round(height - top - height * 0.04);
+  const garmentHeight = Math.min(Math.round(garmentWidth * 1.25), maxHeight);
   // The generated SVGs have no background rect, so the rasterized PNG is
   // transparent outside the garment silhouette — the default "over" blend
   // below lets the photo show through everywhere except the garment shape.
@@ -92,7 +98,6 @@ async function runDemoTryOn({
     .toBuffer();
 
   const left = Math.round((width - garmentWidth) / 2);
-  const top = Math.round(height * 0.16);
 
   const composed = await sharp(photoBuffer)
     .rotate()
